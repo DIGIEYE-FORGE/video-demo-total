@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Search, Play, ArrowLeft } from "lucide-react";
+import { Search, Play } from "lucide-react";
 import Image from "next/image";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type TVideo = {
   id: string;
@@ -20,31 +23,31 @@ const videos: TVideo[] = [
   {
     id: "1",
     title: "autorout",
-    thumbnail: "/images/autorout.jpg",
+    thumbnail: "/images/autorout.png",
     url: "/videos/autorout.mp4",
   },
   {
     id: "2",
-    title: "in-station",
-    thumbnail: "/images/in-station.jpg",
+    title: "in station",
+    thumbnail: "/images/in-station.png",
     url: "/videos/in-station.mp4",
   },
   {
     id: "3",
-    title: "smart-retail-counting",
-    thumbnail: "/images/smart-retail-counting.jpg",
+    title: "smart retail counting",
+    thumbnail: "/images/smart-retail-counting.png",
     url: "/videos/smart-retail-counting.mp4",
   },
   {
     id: "4",
-    title: "smart-retail",
-    thumbnail: "/images/smart-retail.jpg",
+    title: "smart retail",
+    thumbnail: "/images/smart-retail.png",
     url: "/videos/smart-retail.mp4",
   },
   {
     id: "5",
     title: "station",
-    thumbnail: "/images/station.jpg",
+    thumbnail: "/images/station.png",
     url: "/videos/station.mp4",
   },
 ];
@@ -57,90 +60,76 @@ export default function Component() {
     video.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDeselect = () => {
-    setSelectedVideo(null);
-  };
-
   return (
-    <div className="container mx-auto p-4 max-w-7xl">
-      <h1 className="text-4xl font-bold mb-8 text-center">Video Library</h1>
-
+    <main className="container mx-auto p-[clamp(1rem,5vw,5rem)] max-w-screen-2xl overflow-auto">
+      <h1 className="text-4xl font-bold mb-8 text-center">
+        Total Energy Ai Models
+      </h1>
       <div className="mb-8 relative max-w-md mx-auto">
         <Input
           type="text"
           placeholder="Search videos..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 rounded-full bg-white bg-opacity-20 backdrop-blur-lg border-none"
+          className="pl-10 rounded-full bg-white/10 backdrop-blur-lg h-12 "
         />
         <Search
           className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
           size={20}
         />
       </div>
-
-      {selectedVideo ? (
-        <div className="space-y-4">
-          <Button
-            variant="ghost"
-            onClick={handleDeselect}
-            className="mb-4 hover:bg-white hover:bg-opacity-20"
-          >
-            <ArrowLeft className="mr-2" size={20} />
-            Back to Videos
-          </Button>
-          <div className="relative pt-[56.25%] rounded-lg overflow-hidden">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] gap-4 md:gap-6 justify-center">
+        {filteredVideos.map((video) => {
+          return (
+            <div
+              role="button"
+              key={video.id}
+              className="border rounded-xl hover:shadow-lg overflow-hidden relative bg-foreground/5 border-foreground/10 backdrop:blur hover:-rotate-2 hover:scale-105 transition-transform duration-300 active:duration-150 active:scale-100 active:rotate-2"
+              onClick={() => setSelectedVideo(video)}
+            >
+              <div className="w-full aspect-video relative ">
+                <Image
+                  src={video.thumbnail}
+                  width={200}
+                  height={120}
+                  className="object-cover w-full h-full"
+                  priority
+                  alt={`Thumbnail for ${video.title}`}
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+                  <Play className="text-white" size={48} />
+                </div>
+              </div>
+              <h3 className="font-semibold p-4 truncate text-card-foreground capitalize">
+                {video.title.replace(/-/g, " ")}
+              </h3>
+            </div>
+          );
+        })}
+      </div>
+      <Dialog
+        open={selectedVideo !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedVideo(null);
+          }
+        }}
+      >
+        <DialogContent className=" backdrop-blur-sm bg-[#000e18]/50 max-w-screen-lg max-h-[90vh] aspect-square md:aspect-video flex flex-col p-4 md:p-6">
+          <DialogTitle className="text-xl text-center font-semibold  capitalize">
+            {selectedVideo?.title}
+          </DialogTitle>
+          <DialogDescription className={"hidden"} />
+          {selectedVideo && (
             <video
               src={selectedVideo.url}
+              className="h-1 flex-1 rounded-xl overflow-hidden"
               controls
-              className="absolute top-0 left-0 w-full h-full"
-            >
-              Your browser does not support the video tag.
-            </video>
-          </div>
-          <Card className="bg-white bg-opacity-20 backdrop-blur-lg border-none">
-            <CardContent className="p-6">
-              <CardTitle className="text-2xl mb-2">
-                {selectedVideo.title}
-              </CardTitle>
-              <p className="text-gray-200">
-                This is where you could add a description of the video,
-                information about the creator, or any other relevant details.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
-        <ScrollArea className="h-[calc(100vh-200px)]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredVideos.map((video) => (
-              <Card
-                key={video.id}
-                className="overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg bg-white bg-opacity-20 backdrop-blur-lg border-none"
-                onClick={() => setSelectedVideo(video)}
-              >
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <Image
-                      width={200}
-                      height={120}
-                      src={video.thumbnail}
-                      alt={`Thumbnail for ${video.title}`}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-                      <Play className="text-white" size={48} />
-                    </div>
-                  </div>
-                  <h3 className="font-semibold p-4 truncate text-gray-800">
-                    {video.title}
-                  </h3>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </ScrollArea>
-      )}
-    </div>
+              autoPlay
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </main>
   );
 }
